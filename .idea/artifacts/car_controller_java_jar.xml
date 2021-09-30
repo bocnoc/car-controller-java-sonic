@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="car-controller-java:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/car_controller_java_jar</output-path>
+    <root id="archive" name="car-controller-java.jar">
+      <element id="module-output" name="car-controller-java" />
+      <element id="extracted-dir" path="$USER_HOME$/local/librealsense-java/build/libs/librealsensejava-all-2.44.0-0.4.2.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/local/opencv/build/install/java/opencv-453.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
