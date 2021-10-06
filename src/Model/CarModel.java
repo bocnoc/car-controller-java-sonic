@@ -36,6 +36,7 @@ public class CarModel {
     public void pushFrameToQueue(Mat m) {
         assert m != null;
         synchronized (this.drawingQueue) { // popFirstFrameが呼ばれている間は待機
+            System.out.println(this.drawingQueue.size());
             if (this.drawingQueue.size() >= 10) { // 10フレームまで
                 this.drawingQueue.clear();
             }
@@ -44,11 +45,9 @@ public class CarModel {
     }
 
     public Mat popFirstFrame() {
-        Mat out;
         synchronized (this.drawingQueue) {
-            out = this.drawingQueue.pollFirst();
+            return this.drawingQueue.pollFirst();
         }
-        return out;
     }
 
     public void run() {

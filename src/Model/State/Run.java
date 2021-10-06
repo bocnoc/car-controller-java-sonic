@@ -23,14 +23,22 @@ public class Run extends State {
             final var data = stream.getFrameList();
             final var color = data.getColorFrame();
             final var depth = data.getDepthFrame();
-            Colorizer colorizer = new Colorizer();
+            final Colorizer colorizer = new Colorizer();
             final var depthFrame = colorizer.colorize(depth);
             final Mat colorMat = new Mat(color.getHeight(), color.getWidth(), CvType.CV_8UC3, color.getData());
             final Mat depthMat = new Mat(color.getHeight(), color.getWidth(), CvType.CV_8UC3, depthFrame.getData());
-            Mat out = new Mat();
+            final Mat out = new Mat();
             final var l = List.of(colorMat, depthMat);
             Core.hconcat(l, out);
             model.pushFrameToQueue(out);
+            depthFrame.release();
+            colorMat.release();
+            depthMat.release();
+            color.release();
+            depth.release();
+            colorMat.release();
+            data.release();
+            colorizer.release();
         }
         // model.setState(Tracking.getInstance());
     }

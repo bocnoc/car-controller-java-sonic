@@ -19,6 +19,7 @@ class Canvas extends JPanel {
         final var buf = (DataBufferByte) image.getRaster().getDataBuffer();
         final byte[] data = buf.getData();
         img.get(0, 0, data);
+        img.release();
         this.img = image;
         repaint();
     }
