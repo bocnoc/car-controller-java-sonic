@@ -14,19 +14,14 @@ public class CarModel {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME); // DO NOT DELETE THIS LINE!
     }
 
-    private static final CarModel model = new CarModel();
     private State state;
     private final StreamManager streamManager;
     private final ArrayDeque<Mat> drawingQueue;
 
-    private CarModel() {
+    public CarModel() {
         this.state = Init.getInstance();
         this.streamManager = new StreamManager();
         this.drawingQueue = new ArrayDeque<>(10);
-    }
-
-    public static CarModel getInstance() {
-        return model;
     }
 
     public StreamManager getStreamManager() {
@@ -38,6 +33,7 @@ public class CarModel {
         synchronized (this.drawingQueue) { // popFirstFrameが呼ばれている間は待機
             System.out.println(this.drawingQueue.size());
             if (this.drawingQueue.size() >= 10) { // 10フレームまで
+                this.drawingQueue.forEach(Mat::release); // TODO: Mat専用のArrayDequeを作る
                 this.drawingQueue.clear();
             }
             this.drawingQueue.addLast(m);
