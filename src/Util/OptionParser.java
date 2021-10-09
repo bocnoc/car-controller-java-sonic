@@ -29,7 +29,7 @@ public class OptionParser {
                 if (i + 1 >= args.length) {
                     throw new IllegalArgumentException(String.format("[%s]: parameter should be given", args[i]));
                 }
-                opt.value = args[i++];
+                opt.value = args[++i];
             }
             loadedOption.put(opt.shortStr, opt);
             if (opt.longStr != null) {
