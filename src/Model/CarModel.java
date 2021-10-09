@@ -8,6 +8,7 @@ import org.opencv.core.Core;
 import org.opencv.core.Mat;
 
 import java.util.ArrayDeque;
+import java.util.Properties;
 
 public class CarModel {
     static {
@@ -18,9 +19,9 @@ public class CarModel {
     private final StreamManager streamManager;
     private final ArrayDeque<Mat> drawingQueue;
 
-    public CarModel() {
+    public CarModel(Properties properties) {
         this.state = Init.getInstance();
-        this.streamManager = new StreamManager();
+        this.streamManager = new StreamManager(properties);
         this.drawingQueue = new ArrayDeque<>(10);
     }
 
