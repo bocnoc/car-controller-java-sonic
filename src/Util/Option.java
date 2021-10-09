@@ -13,4 +13,8 @@ public class Option {
         this.hint = hint;
         this.hasValue = hasValue;
     }
+
+    public String getValue() {
+        return value;
+    }
 }
