@@ -1,18 +1,21 @@
 package Util.PWMDevice;
 
+import java.util.Properties;
+
 public abstract class PWMDevice {
-    // final int port;
-    // final String deviceName;
-    // final String host;
+    final String port;
+    final String host;
 
 
-    public PWMDevice() {
+    public PWMDevice(Properties properties) {
        // init properties here...
+        this.port = properties.getProperty("serverPort", "1065");
+        this.host = properties.getProperty("serverHostName", "1.1.1.1");
     }
 
-    public abstract void setScale();
+    public abstract void setScale(double scale);
 
-    void sendRequest() {
-
+    void sendRequest(double pwmVal) {
+        System.out.println(pwmVal);
     }
 }
