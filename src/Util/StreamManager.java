@@ -8,9 +8,16 @@ import org.intel.rs.types.Stream;
 
 import java.util.Properties;
 
+/**
+ * RealSenseからデータを取得するためのクラスです
+ */
 public class StreamManager {
     final Pipeline pipeline;
 
+    /**
+     * 入力されたプロパティに応じてストリームの設定をします
+     * @param properties "streamWidth"，"streamHeight", "streamFPS"が設定されていない場合，デフォルト値を読み取ります
+     */
     public StreamManager(Properties properties) {
         final int width = Integer.parseInt(properties.getProperty("streamWidth", "424"));
         final int height = Integer.parseInt(properties.getProperty("streamHeight", "240"));
@@ -24,6 +31,9 @@ public class StreamManager {
         pipeline.start(config);
     }
 
+    /**
+     * RealSenseから読み取ったフレームをFrameListとして返します．
+     */
     public FrameList getFrameList() {
         return pipeline.waitForFrames();
     }
