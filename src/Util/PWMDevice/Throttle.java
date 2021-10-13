@@ -4,7 +4,7 @@ import java.util.Properties;
 
 public class Throttle extends PWMDevice {
     public Throttle(Properties properties) {
-        super(properties);
+        super("throttle", properties);
     }
 
     @Override

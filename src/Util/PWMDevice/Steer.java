@@ -4,7 +4,7 @@ import java.util.Properties;
 
 public class Steer extends PWMDevice {
     public Steer(Properties properties) {
-        super(properties);
+        super("steer", properties);
     }
 
     @Override
