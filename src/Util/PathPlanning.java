@@ -24,8 +24,8 @@ public class PathPlanning {
      */
     public static void drawWall(final Mat mat, ArrayList<Wall> list) {
         for (var w: list) {
-            final var right = w.rightSide;
-            final var left = w.leftSide;
+            final var right = w.rightSide();
+            final var left = w.leftSide();
             Imgproc.circle(mat, right, 8, new Scalar(0, 0, 0), FILLED);
             Imgproc.circle(mat, right, 5, new Scalar(0, 0, 255), FILLED);
             Imgproc.circle(mat, left, 8, new Scalar(0, 0, 0), FILLED);
@@ -92,6 +92,7 @@ public class PathPlanning {
         return  pointArray;
     }
 
+    final static Dictionary markerDictionary = Aruco.getPredefinedDictionary(Aruco.DICT_6X6_250);
     /**
      * 入力されたMat形式の画像からArUcoマーカを検出します
      * @param input OpenCVのMatです
@@ -99,7 +100,6 @@ public class PathPlanning {
      */
     public static ArUcoMarker detectMarker(Mat input) {
         ArUcoMarker result = null;
-        final Dictionary markerDictionary = Aruco.getPredefinedDictionary(Aruco.DICT_6X6_250);
         final Mat markerIds = new Mat();
         final var corners = new ArrayList<Mat>();
         try { // ランダムに謎の例外を吐くので握りつぶす

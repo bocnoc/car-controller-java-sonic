@@ -3,7 +3,10 @@ package Util;
 import org.intel.rs.frame.FrameList;
 import org.intel.rs.pipeline.Config;
 import org.intel.rs.pipeline.Pipeline;
+import org.intel.rs.processing.Align;
+import org.intel.rs.stream.VideoStreamProfile;
 import org.intel.rs.types.Format;
+import org.intel.rs.types.Intrinsics;
 import org.intel.rs.types.Stream;
 
 import java.util.Properties;
@@ -13,6 +16,7 @@ import java.util.Properties;
  */
 public class StreamManager {
     final Pipeline pipeline;
+    final VideoStreamProfile videoStreamProfile;
 
     /**
      * 入力されたプロパティに応じてストリームの設定をします
@@ -28,7 +32,11 @@ public class StreamManager {
         config.enableStream(Stream.Depth, width, height, Format.Z16, fps);
         //config.enableStream(Stream.Infrared, 1, 424, 240, Format.Y8, 30);
         //config.enableStream(Stream.Infrared, 2, 424, 240, Format.Y8, 30);
-        pipeline.start(config);
+        this.videoStreamProfile =  (VideoStreamProfile)pipeline.start(config).getStreams().get(0);
+    }
+
+    public Intrinsics getCameraIntrinsics() {
+        return this.videoStreamProfile.getIntrinsics();
     }
 
     /**
@@ -36,5 +44,14 @@ public class StreamManager {
      */
     public FrameList getFrameList() {
         return pipeline.waitForFrames();
+    }
+
+    public FrameList getAlignedFrameList() {
+        final Align align = new Align(Stream.Color);
+        final FrameList rawData = this.getFrameList();
+        final FrameList frames = align.process(rawData);
+        align.release();
+        rawData.release();
+        return frames;
     }
 }
