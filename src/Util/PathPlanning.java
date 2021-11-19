@@ -1,6 +1,7 @@
 package Util;
 
 import org.intel.rs.frame.DepthFrame;
+import org.intel.rs.types.Vertex;
 import org.opencv.aruco.Aruco;
 import org.opencv.aruco.Dictionary;
 import org.opencv.core.Mat;
@@ -123,5 +124,40 @@ public class PathPlanning {
         markerIds.release();
         corners.forEach(Mat::release);
         return result;
+    }
+
+    public static Point calcTargetPoint(Vertex left, Vertex center, Vertex right, double d) {
+        /*
+            マーカ上の左辺の中点A(left), 中央の点C(center), 右辺の中点B(right)の三次元座標から，d[m]だけ離れた距離の点Pの座標(y座標を除く)を得る
+            ただしPはAB・CP = 0 かつ |CP| = dを満たす
+            a = right.x - left.x
+            b = right.z - right.z
+            P(X, Z) = (-b/a * (Z - center.z)) + center.x, - a * d * (1 / (a^2 + b^2) ^ (1 / 2)) + center.z)
+         */
+        final double a = right.getX() - left.getX();
+        final double b = right.getZ() - left.getZ();
+        final double Z = - a * d * Math.sqrt(1 / (a * a + b * b)) + center.getZ();
+        final double X = - b / a * (Z - center.getZ()) + center.getX();
+        return new Point(X, Z);
+    }
+
+    public static void drawPoints(Mat map, Scalar scalar, Point... points){
+        for (final var p: points) {
+            Imgproc.circle(map, p, 5, scalar);
+        }
+    }
+
+    public static void drawPoints(Mat map, Point... points){
+        drawPoints(map, new Scalar(255, 0, 0), points);
+    }
+
+    public static void drawPoints(Mat map, Scalar scalar, ArrayList<Point> points){
+        for (final var p: points) {
+            Imgproc.circle(map, p, 5, scalar);
+        }
+    }
+
+    public static void drawPoints(Mat map, ArrayList<Point> points){
+        drawPoints(map, new Scalar(255, 0, 0), points);
     }
 }
