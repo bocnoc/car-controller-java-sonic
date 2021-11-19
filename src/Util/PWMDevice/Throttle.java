@@ -9,6 +9,6 @@ public class Throttle extends PWMDevice {
 
     @Override
     public void setScale(double scale) {
-        this.sendRequest(0);
+        this.sendRequest(scale);
     }
 }
