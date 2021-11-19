@@ -10,10 +10,7 @@ import org.intel.rs.processing.Align;
 import org.intel.rs.processing.Colorizer;
 import org.intel.rs.processing.HoleFillingFilter;
 import org.intel.rs.types.Stream;
-import org.opencv.core.Core;
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.core.Scalar;
+import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.List;
@@ -28,13 +25,33 @@ public class Run extends State {
 
     private void rotate(Throttle throttle, Steer steer) {
         System.out.println("Turn");
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            //throttle.setScale(0);
-            e.printStackTrace();
+        for (int i = 0; i < 10; i++) {
+            try {
+
+                System.out.println("Start");
+                steer.setScale(-1.0);
+                Thread.sleep(1000);
+
+                throttle.setScale(-0.5);
+                Thread.sleep(500);
+
+                steer.setScale(1.0);
+                throttle.setScale(0.0);
+                Thread.sleep(1000);
+
+                throttle.setScale(0.5);
+                Thread.sleep(500);
+
+                steer.setScale(1.0);
+                throttle.setScale(0);
+                Thread.sleep(1000);
+                System.out.println("End");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         this.isDetectingMarker = true;
+        throttle.setScale(0.8);
     }
 
     @Override
@@ -47,7 +64,7 @@ public class Run extends State {
         final var property = model.getProperties();
         final var steer = model.getSteer();
         final var throttle = model.getThrottle();
-
+        //throttle.setScale(0.8);
         while (true) {
             final FrameList data;
             {
@@ -67,16 +84,16 @@ public class Run extends State {
             final Mat colorMat = new Mat(color.getHeight(), color.getWidth(), CvType.CV_8UC3, color.getData());
             final Mat depthMat = new Mat(color.getHeight(), color.getWidth(), CvType.CV_8UC3, depthFrame.getData());
 
-            // calculate scale
-            if (/*this.isDetectingMarker*/true) {
+            final var detectThreshold = Double.parseDouble(property.getProperty("wallDetectThreshold", "0.7"));
+            final var walls = PathPlanning.getWallOfPath(depth, detectThreshold, 8);
+            final double averageX = walls.stream().mapToDouble(wall -> wall.getCenterPoint().x).sum() / walls.size();
+            steer.setScale(steer.calcScaleWithPoint(depthMat, new Point(averageX, 0)) * 1.5 - 0.2);
+
+            if (this.isDetectingMarker) {
                 // aruco marker detecting
                 final var marker = PathPlanning.detectMarker(colorMat);
-                final var threshold = 1.0;
-                if (marker != null) {
-                    final var p = marker.center();
-                    System.out.println(steer.calcScaleWithPoint(colorMat, p));
-                }
-                /*if (point != null && depth.getDistance((int) point.x, (int) point.y) < threshold) {
+                final var threshold = 3.0;
+                if (marker != null && depth.getDistance((int) marker.center().x, (int) marker.center().y) < threshold) {
                     this.isDetectingMarker = false;
                     model.setState(Tracking.getInstance());
                     depthFrame.release();
@@ -87,24 +104,17 @@ public class Run extends State {
                     colorMat.release();
                     data.release();
                     break;
-                }*/
-                if (depth.getDistance(0, 0) > 10000) {
-                    break;
                 }
+            } else {
+                // check center wall -> turn
+                final var centerWallPoints = PathPlanning.getCenterWallPointArray(depth, detectThreshold);
+                if (centerWallPoints.size() > 20) {
+                    rotate(throttle, steer);
+                }
+                PathPlanning.drawPoints(depthMat, centerWallPoints);
             }
-            // check center wall -> turn
-            final var detectThreshold = Double.parseDouble(property.getProperty("wallDetectThreshold", "0.7"));
-            final var centerWallPoints = PathPlanning.getCenterWallPointArray(depth, detectThreshold);
-            centerWallPoints.forEach(point -> {
-                Imgproc.circle(depthMat, point, 5, new Scalar(255, 255, 255), Imgproc.FILLED);
-            });
-            //rotate(throttle, steer);
-            // control steering
+            // calculate scale
             final var wallPoints = PathPlanning.getWallOfPath(depth, detectThreshold, 8);
-
-            //final double averageX = points.stream().mapToDouble(point -> point.x).sum() / points.size();
-            // TODO: calc steer scale
-            // draw
             PathPlanning.drawWall(depthMat, wallPoints);
             PathPlanning.drawWall(colorMat, wallPoints);
 
