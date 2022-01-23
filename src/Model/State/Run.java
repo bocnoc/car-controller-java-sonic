@@ -13,7 +13,14 @@ import org.intel.rs.types.Stream;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class Run extends State {
     private static final State state = new Run();
@@ -25,26 +32,26 @@ public class Run extends State {
 
     private void rotate(Throttle throttle, Steer steer) {
         System.out.println("Turn");
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 5; i++) {
             try {
 
                 System.out.println("Start");
                 steer.setScale(-1.0);
+                Thread.sleep(2000);
+
+                throttle.setScale(-1.0);
                 Thread.sleep(1000);
 
-                throttle.setScale(-0.5);
-                Thread.sleep(500);
-
-                steer.setScale(1.0);
                 throttle.setScale(0.0);
+                steer.setScale(0.0);
+                Thread.sleep(2000);
+
+                throttle.setScale(1.0);
                 Thread.sleep(1000);
 
-                throttle.setScale(0.5);
-                Thread.sleep(500);
-
-                steer.setScale(1.0);
                 throttle.setScale(0);
-                Thread.sleep(1000);
+                steer.setScale(0);
+                Thread.sleep(2000);
                 System.out.println("End");
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -64,7 +71,9 @@ public class Run extends State {
         final var property = model.getProperties();
         final var steer = model.getSteer();
         final var throttle = model.getThrottle();
-        //throttle.setScale(0.8);
+
+        this.sendRequest("start");
+        throttle.setScale(0.8);
         while (true) {
             final FrameList data;
             {
@@ -87,7 +96,7 @@ public class Run extends State {
             final var detectThreshold = Double.parseDouble(property.getProperty("wallDetectThreshold", "0.7"));
             final var walls = PathPlanning.getWallOfPath(depth, detectThreshold, 8);
             final double averageX = walls.stream().mapToDouble(wall -> wall.getCenterPoint().x).sum() / walls.size();
-            steer.setScale(steer.calcScaleWithPoint(depthMat, new Point(averageX, 0)) * 1.5 - 0.2);
+            steer.setScale(steer.calcScaleWithPoint(depthMat, new Point(averageX, 0)) * 1.5);
 
             if (this.isDetectingMarker) {
                 // aruco marker detecting
@@ -135,8 +144,21 @@ public class Run extends State {
         holeFillingFilter.release();
         colorizer.release();
         alignTo.release();
+        this.sendRequest("stop");
     }
 
+    public void sendRequest(String state) {
+        final var client = HttpClient.newHttpClient();
+        final var uri = String.format("http://%s:%s/%s/%s/", "localhost", "9999", "recorder", state);
+        final var request = HttpRequest.newBuilder(URI.create(uri)).build();
+        final var future = client.sendAsync(request, HttpResponse.BodyHandlers.ofString());
+        try {
+            future.get(1000, TimeUnit.MILLISECONDS);
+        } catch (ExecutionException | InterruptedException | TimeoutException e) {
+            // リクエスト失敗したら車両が動かないだけなので何もしなくても問題なし
+            //System.out.println(deviceName + ": request failed");
+        }
+    }
 
     @Override
     public String toString() {

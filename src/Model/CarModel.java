@@ -1,9 +1,6 @@
 package Model;
 
-import Model.State.Halt;
-import Model.State.Init;
-import Model.State.State;
-import Model.State.Tracking;
+import Model.State.*;
 import Util.PWMDevice.Steer;
 import Util.PWMDevice.Throttle;
 import Util.StreamManager;
@@ -27,7 +24,7 @@ public class CarModel {
 
     public CarModel(Properties properties) {
         this.properties = properties;
-        this.state = Tracking.getInstance();
+        this.state = Init.getInstance();
         this.streamManager = new StreamManager(properties);
         this.drawingQueue = new ArrayDeque<>(10);
         this.steer = new Steer(properties);

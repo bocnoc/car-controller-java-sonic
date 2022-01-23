@@ -34,14 +34,14 @@ public abstract class PWMDevice {
      */
     void sendRequest(double scale) {
         final var client = HttpClient.newHttpClient();
-        final var uri = String.format("http://%s:%s/%s/%f", host, port, deviceName, scale);
+        final var uri = String.format("http://%s:%s/%s/%f/", host, port, deviceName, scale);
         final var request = HttpRequest.newBuilder(URI.create(uri)).build();
         final var future = client.sendAsync(request, HttpResponse.BodyHandlers.ofString());
         try {
             future.get(1000, TimeUnit.MILLISECONDS);
         } catch (ExecutionException | InterruptedException | TimeoutException e) {
             // リクエスト失敗したら車両が動かないだけなので何もしなくても問題なし
-            System.out.println(deviceName + ": request failed");
+            //System.out.println(deviceName + ": request failed");
         }
     }
 }

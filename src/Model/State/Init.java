@@ -18,16 +18,31 @@ public class Init extends State {
     private void start(final Steer steer, final Throttle throttle) {
         // TODO: テキストファイルとかで走行を定義できるようにしたほうがいいかも
         try {
+            steer.setScale(0);
+            Thread.sleep(2000);
             throttle.setScale(-1.0);
             Thread.sleep(2000);
             throttle.setScale(0.0);
-            steer.setScale(1.0);
             Thread.sleep(500);
-            throttle.setScale(-1.0);
-            Thread.sleep(1000);
-            throttle.setScale(0);
-            steer.setScale(0);
-            Thread.sleep(500);
+            for (int i = 0; i < 5; i++) {
+                System.out.println(i);
+                steer.setScale(-1.0);
+                Thread.sleep(2000);
+
+                throttle.setScale(-1.0);
+                Thread.sleep(1000);
+
+                throttle.setScale(0.0);
+                steer.setScale(0.0);
+                Thread.sleep(2000);
+
+                throttle.setScale(1.0);
+                Thread.sleep(1000);
+
+                throttle.setScale(0);
+                steer.setScale(0);
+                Thread.sleep(2000);
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -60,7 +75,7 @@ public class Init extends State {
         }
         // start
         this.start(model.getSteer(), model.getThrottle());
-        model.setState(Halt.getInstance());
+        model.setState(Run.getInstance());
     }
 
     @Override
