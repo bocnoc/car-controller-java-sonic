@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component jdk="17" jdk_type="JavaSDK">
+	<output-test url="file://$MODULE_DIR$/out/test/car-controller-java"/>
+	<exclude-output/>
+	<contentEntry url="file://$MODULE_DIR$"/>
+	<lib name="librealsensejava-all-2.44.0-0.4.2.jar" scope="COMPILE">
+		<relative-module-cls project-related="jar://$PROJECT_DIR$/librealsensejava-all-2.44.0-0.4.2.jar!/"/>
+	</lib>
+	<lib name="opencv-453.jar" scope="COMPILE">
+		<relative-module-cls project-related="jar://$PROJECT_DIR$/opencv-453.jar!/"/>
+	</lib>
+	<lib name="$USER_HOME$/Desktop/new_build/install/java/opencv-453.jar" scope="COMPILE">
+		<srcroot url="jar://$USER_HOME$/Desktop/new_build/install/java/opencv-453.jar!/"/>
+	</lib>
+</component>

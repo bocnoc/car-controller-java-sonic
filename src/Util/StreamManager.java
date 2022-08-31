@@ -26,8 +26,10 @@ public class StreamManager {
         final int width = Integer.parseInt(properties.getProperty("streamWidth", "424"));
         final int height = Integer.parseInt(properties.getProperty("streamHeight", "240"));
         final int fps = Integer.parseInt(properties.getProperty("streamFPS", "30"));
+//        System.out.print("1");
         this.pipeline = new Pipeline();
         final var config = new Config();
+        //config.enableStream(Stream.Any, width, height, fps);
         config.enableStream(Stream.Color, width, height, Format.Bgr8, fps);
         config.enableStream(Stream.Depth, width, height, Format.Z16, fps);
         //config.enableStream(Stream.Infrared, 1, 424, 240, Format.Y8, 30);

@@ -141,6 +141,10 @@ public class PathPlanning {
         return new Point(X, Z);
     }
 
+//    public static Point calcPathToMarker(Vertex left, Vertex center, Vertex right, double d){
+//
+//    }
+
     public static void drawPoints(Mat map, Scalar scalar, Point... points){
         for (final var p: points) {
             Imgproc.circle(map, p, 5, scalar);

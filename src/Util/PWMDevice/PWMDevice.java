@@ -28,7 +28,7 @@ public abstract class PWMDevice {
     public abstract void setScale(double scale);
 
     /**
-     * http://host:port/device/scale にリクエストを送ることでハードウェア制御を行います
+     * http://host:port/device/scale car-jetson2.local:1065/throttle/(-1.0~1.0) にリクエストを送ることでハードウェア制御を行います
      * リクエストに失敗した場合は何も起こりません
      * @param scale PWMを-1.0~1.0のスケール値で入力します．範囲外の数値を入力した場合，サーバ側で-1.0もしくは1.0に値が変更されます
      */
@@ -38,7 +38,7 @@ public abstract class PWMDevice {
         final var request = HttpRequest.newBuilder(URI.create(uri)).build();
         final var future = client.sendAsync(request, HttpResponse.BodyHandlers.ofString());
         try {
-            future.get(1000, TimeUnit.MILLISECONDS);
+            future.get(1, TimeUnit.MILLISECONDS);
         } catch (ExecutionException | InterruptedException | TimeoutException e) {
             // リクエスト失敗したら車両が動かないだけなので何もしなくても問題なし
             //System.out.println(deviceName + ": request failed");

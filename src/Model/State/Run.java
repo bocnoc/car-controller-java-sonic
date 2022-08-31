@@ -25,40 +25,39 @@ import java.util.concurrent.TimeoutException;
 public class Run extends State {
     private static final State state = new Run();
     private boolean isDetectingMarker = false;
-
     public static State getInstance() {
         return state;
     }
 
     private void rotate(Throttle throttle, Steer steer) {
         System.out.println("Turn");
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 1; i++) { //
             try {
 
-                System.out.println("Start");
-                steer.setScale(-1.0);
+                System.out.println("Start of turning"); //start to turn when there is a wall or sthing in front of
+                steer.setScale(-0.7);
                 Thread.sleep(2000);
 
-                throttle.setScale(-1.0);
+                throttle.setScale(-0.7);
                 Thread.sleep(1000);
 
                 throttle.setScale(0.0);
                 steer.setScale(0.0);
-                Thread.sleep(2000);
+                Thread.sleep(1000);
 
                 throttle.setScale(1.0);
-                Thread.sleep(1000);
+                Thread.sleep(500);
 
                 throttle.setScale(0);
                 steer.setScale(0);
-                Thread.sleep(2000);
-                System.out.println("End");
+                Thread.sleep(1000);
+                System.out.println("Finish turning");
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
         this.isDetectingMarker = true;
-        throttle.setScale(0.8);
+        throttle.setScale(0);
     }
 
     @Override
@@ -73,7 +72,7 @@ public class Run extends State {
         final var throttle = model.getThrottle();
 
         this.sendRequest("start");
-        throttle.setScale(0.8);
+        throttle.setScale(0.5);
         while (true) {
             final FrameList data;
             {
@@ -89,6 +88,7 @@ public class Run extends State {
                 depth_raw.release();
             }
 
+
             final var depthFrame = colorizer.colorize(depth);
             final Mat colorMat = new Mat(color.getHeight(), color.getWidth(), CvType.CV_8UC3, color.getData());
             final Mat depthMat = new Mat(color.getHeight(), color.getWidth(), CvType.CV_8UC3, depthFrame.getData());
@@ -96,7 +96,9 @@ public class Run extends State {
             final var detectThreshold = Double.parseDouble(property.getProperty("wallDetectThreshold", "0.7"));
             final var walls = PathPlanning.getWallOfPath(depth, detectThreshold, 8);
             final double averageX = walls.stream().mapToDouble(wall -> wall.getCenterPoint().x).sum() / walls.size();
+
             steer.setScale(steer.calcScaleWithPoint(depthMat, new Point(averageX, 0)) * 1.5);
+
 
             if (this.isDetectingMarker) {
                 // aruco marker detecting
@@ -131,7 +133,8 @@ public class Run extends State {
             final var l = List.of(colorMat, depthMat);
             Core.hconcat(l, out);
             l.forEach(Mat::release);
-            model.pushFrameToQueue(out);
+            model.pushFrameToQueue(out); //push-out video
+
             // release
             depthFrame.release();
             colorMat.release();

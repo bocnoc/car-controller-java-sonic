@@ -17,7 +17,7 @@ public class ScreenController {
 
     public void run() {
         final var service =  Executors.newSingleThreadScheduledExecutor();
-        service.scheduleAtFixedRate(this::updateScreen, 0, 32, TimeUnit.MILLISECONDS);
+        service.scheduleAtFixedRate(this::updateScreen, 0, 30, TimeUnit.MILLISECONDS);
     }
 
     private void updateScreen() {

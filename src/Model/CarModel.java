@@ -24,7 +24,7 @@ public class CarModel {
 
     public CarModel(Properties properties) {
         this.properties = properties;
-        this.state = Init.getInstance();
+        this.state = Run.getInstance();
         this.streamManager = new StreamManager(properties);
         this.drawingQueue = new ArrayDeque<>(10);
         this.steer = new Steer(properties);

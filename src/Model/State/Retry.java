@@ -4,6 +4,7 @@ import Model.CarModel;
 import Util.ArUcoMarker;
 import Util.Gpio;
 import Util.PathPlanning;
+import Model.GPIO.Ultrasonic_distance;
 import org.intel.rs.frame.FrameList;
 import org.intel.rs.processing.Align;
 import org.intel.rs.processing.HoleFillingFilter;
@@ -15,6 +16,8 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
+import Model.*;
+
 
 import java.io.IOException;
 
@@ -56,8 +59,18 @@ public class Retry extends State {
         final var align = new Align(Stream.Color);
         final var steer = model.getSteer();
         final var throttle = model.getThrottle();
-        steer.setScale(0);
-        throttle.setScale(-0.8);
+        //final var scale = steer.calcScaleWithPoint(colorMat, new Point(targetScreenPoint.getI(), targetScreenPoint.getJ()));
+        //steer.SteerForRetry(scale);
+        //forback forbac = new forback();
+        /*newline add*/
+        double Steer_of_sonic = Model.GPIO.Ultrasonic_distance.Sonic_distance();
+
+        System.out.println(Steer_of_sonic);
+        steer.setScale(Steer_of_sonic);
+
+        /*end of added line*/
+        //steer.setScale(0);
+        throttle.setScale(-0.5);
 
         while (true) {
             final FrameList data;
@@ -94,19 +107,24 @@ public class Retry extends State {
                         steer.setScale(0);
                         throttle.setScale(0);
                         break;
-                    } else {
-                        if (targetScreenPoint.getI() >= colorFrame.getWidth() / 3.0 || targetScreenPoint.getI() < colorFrame.getWidth() / 3.0 * 2.0 ||
+                    } else if (centerDepth < 2.0 && centerDepth >= 1) {
+                        if (targetScreenPoint.getI() >= colorFrame.getWidth() / 3.0 || targetScreenPoint.getI() < (colorFrame.getWidth() / 3.0) * 2.0 ||
                                 targetScreenPoint.getJ() >= 0 || targetScreenPoint.getJ() < colorFrame.getHeight()
                         ) {
                             final var scale = steer.calcScaleWithPoint(colorMat, new Point(targetScreenPoint.getI(), targetScreenPoint.getJ()));
-                            steer.setScale(-scale);
-                        } else if (targetScreenPoint.getI() <= colorFrame.getWidth() / 3.0) { // 点が画面の左の方にあるとき
-                            steer.setScale(-1);
-                        } else if (targetScreenPoint.getI() > colorFrame.getWidth() / 3.0 * 2.0 ) { // 点が画面の右の方にあるとき
-                            steer.setScale(1);
+                            steer.setScale(-scale/2); //backing steering too much, decrease the scale to half
+                                System.out.print(scale);
+
+                        } else if (targetScreenPoint.getI() <= colorFrame.getWidth() / 3.0) { // 点が画面の左の方にあるとき -1
+                            steer.setScale(0);
+                        } else if (targetScreenPoint.getI() > (colorFrame.getWidth() / 3.0) * 2.0 ) { // 点が画面の右の方にあるとき 1
+                            steer.setScale(0);
                         }
 
+                    } else if (centerDepth < 1){
+                        steer.setScale(Steer_of_sonic); //from 0 to steer_of_sonic
                     }
+
                     intrinsics.release();
                 }
                 data.release();

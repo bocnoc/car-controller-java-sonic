@@ -1,7 +1,9 @@
 package Model.State;
 
 import Model.CarModel;
+import Model.GPIO.*;
 import Util.ArUcoMarker;
+import Util.PWMDevice.Throttle;
 import Util.PathPlanning;
 import org.intel.rs.frame.FrameList;
 import org.intel.rs.processing.Align;
@@ -10,6 +12,8 @@ import org.intel.rs.types.Stream;
 import org.intel.rs.types.Vertex;
 import org.intel.rs.util.Utils;
 import org.opencv.core.*;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Tracking extends State {
@@ -24,10 +28,11 @@ public class Tracking extends State {
         System.out.println(this);
         final var steer = model.getSteer();
         final var throttle = model.getThrottle();
-        throttle.setScale(0.9);
-
+        throttle.setScale(0.6);
+        //set speed for finding marker (?)
         final var align = new Align(Stream.Color);
         final var streamManager = model.getStreamManager();
+
         while (true) {
             final FrameList data;
             {
@@ -39,14 +44,18 @@ public class Tracking extends State {
             final var depthFrame = data.getDepthFrame();
             final Mat colorMat = new Mat(colorFrame.getHeight(), colorFrame.getWidth(), CvType.CV_8UC3, colorFrame.getData());
             final ArUcoMarker marker =  PathPlanning.detectMarker(colorMat);
-            final Mat map = new Mat(new Size(colorMat.cols(), colorMat.rows()), CvType.CV_8UC3, new Scalar(200, 200, 200));
-            final Mat out = new Mat();
+            final Mat map = new Mat(new Size(colorMat.cols(), colorMat.rows()), CvType.CV_8UC3, new Scalar(200, 200, 200)); //maybe 200x200x200 pixel Including the parameters of the previous one, this constructor additionally accepts an object of the class Scalar as parameter.
+            final Mat out = new Mat();                                                                                      //Mat = color matrix?
             if (marker != null && marker.corners().size() == 4) {
+
                 final var corner = marker.corners();
                 final var centerPoint = marker.center();
                 final var centerDepth = depthFrame.getDistance((int) centerPoint.x, (int)centerPoint.y);
+                //System.out.println(centerDepth);
                 final var leftX = (corner.get(0).x + corner.get(3).x) / 2;
                 final var leftY = (corner.get(0).y + corner.get(3).y) / 2;
+                //System.out.println(leftX);
+                //System.out.println(leftY);
                 final var rightX = (corner.get(1).x + corner.get(2).x) / 2;
                 final var rightY = (corner.get(1).y + corner.get(2).y) / 2;
                 final var leftDepth = depthFrame.getDistance((int) leftX, (int) leftY);
@@ -61,17 +70,30 @@ public class Tracking extends State {
                     final var targetPoint = PathPlanning.calcTargetPoint(left3D, center3D, right3D, 0.8); // TODO: dをプロパティで変更できるようにする
                     final var targetScreenPoint = Utils.projectPointToPixel(intrinsics, new Vertex((float) targetPoint.x, center3D.getY(), (float) targetPoint.y));
                     //System.out.println(centerDepth);
-                    if (centerDepth < 0.35) {
+                    //追加
+//                    if (centerDepth < 1.5 && leftDepth > rightDepth){ //robot car come from left -> backward and find TargerPoint again
+//                        steer.setScale(-1); //from left to right -1~1
+//                        throttle.setScale(0.9);
+//                    }
+                    //追加
+                    if (centerDepth < 0.25) {
                         steer.setScale(0);
                         throttle.setScale(0);
                         break;
+
                     } else if (centerDepth < 1.0) {
-                        final var scale = steer.calcScaleWithPoint(colorMat, centerPoint);
-                        steer.setScale(scale);
+//                        final var scale = steer.calcScaleWithPoint(colorMat, centerPoint);
+//                        steer.setScale(scale); //what if scale = 0?
+                        steer.setScale(0); //what if scale = 0?
+
+                        //System.out.println("scale before enter :" + scale);
                     } else {
                         if (targetScreenPoint.getI() >= 0 || targetScreenPoint.getI() < colorFrame.getWidth() ||
                                 targetScreenPoint.getJ() >= 0 || targetScreenPoint.getJ() < colorFrame.getHeight()
                         ) {
+                            System.out.println("I:" + targetScreenPoint.getI() );
+                            System.out.println("J:" + targetScreenPoint.getJ() );
+
                             final var scale = steer.calcScaleWithPoint(colorMat, new Point(targetScreenPoint.getI(), targetScreenPoint.getJ()));
                             steer.setScale(scale);
                         }
